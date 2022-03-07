@@ -7,8 +7,8 @@ class MenuWrapper:
     def __init__(self):
         self.menu = wx.Menu()
         self.items = {}
-        self.created = False
         self.add_items()
+        self.create()
 
     def append(self, label, helpString='', wId=wx.ID_ANY, kind=wx.ITEM_NORMAL):
         match = re.search('[a-zA-Z&]+', label)
@@ -16,16 +16,13 @@ class MenuWrapper:
         item = self.menu.Append(wId, label, helpString, kind)
         if key: self.items['on'+key] = item
 
-    def get_menu(self):
-        if not self.created:
-            for name in self.items:
-                method = getattr(self, name, None)
-                if callable(method):
-                    self.menu.Bind(wx.EVT_MENU, method, self.items[name])
+    def create(self):
+        for name in self.items:
+            method = getattr(self, name, None)
+            if callable(method):
+                self.menu.Bind(wx.EVT_MENU, method, self.items[name])
 
-        return self.menu
-
-class FileMenu(MenuWrapper):
+class FileMenuWrapper(MenuWrapper):
     def add_items(self):
         self.append(wId=wx.ID_ABOUT,
                     label="&About",
@@ -42,20 +39,22 @@ class FileMenu(MenuWrapper):
         print('onExit')
 
 
-class MainMenuBar(wx.MenuBar):
-    def __init__(self):
-        super().__init__()
-        self.Append(FileMenu().get_menu(), "&File")
+class MainMenuBarWrapper:
+    def __init__(self, app, frame):
+        bar = wx.MenuBar()
+        bar.Append(FileMenuWrapper().menu, "&File")
+        frame.SetMenuBar(bar)
 
-class MainWindow(wx.Frame):
-    def __init__(self, parent, title):
-        super().__init__(parent, title=title, size=(200,100))
-        self.CreateStatusBar()
-        self.SetMenuBar(MainMenuBar())
+class MainWindowWrapper:
+    def __init__(self, app, title='', parent=None):
+        frame = wx.Frame(parent, title=title)
+        frame.CreateStatusBar()
+        MainMenuBarWrapper(app, frame)
+        frame.Show()
 
 class Recipes(wx.App):
     def OnInit(self):
-        MainWindow(None, 'Recipes').Show(True)
+        MainWindowWrapper(self, title='Recipes')
         return True
 
 r = Recipes()
