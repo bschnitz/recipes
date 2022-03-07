@@ -11,9 +11,10 @@ class MenuWrapper:
         self.add_items()
 
     def append(self, label, helpString='', wId=wx.ID_ANY, kind=wx.ITEM_NORMAL):
-        match = re.search('[a-zA-Z]+', label)
+        match = re.search('[a-zA-Z&]+', label)
+        key = match[0].replace('&', '') if match[0] != None else None
         item = self.menu.Append(wId, label, helpString, kind)
-        if match[0] != None: self.items['on'+match[0]] = item
+        if key: self.items['on'+key] = item
 
     def get_menu(self):
         if not self.created:
@@ -37,14 +38,13 @@ class FileMenu(MenuWrapper):
     def onAbout(self, event):
         print('onAbout')
 
+    def onExit(self, event):
+        print('onExit')
+
 
 class MainMenuBar(wx.MenuBar):
     def __init__(self):
         super().__init__()
-        #menu_file = wx.Menu()
-        #menu_file.Append(wx.ID_ABOUT, "&About"," Information about this program")
-        #menu_file.AppendSeparator()
-        #menu_file.Append(wx.ID_EXIT, "E&xit"," Exit the Program")
         self.Append(FileMenu().get_menu(), "&File")
 
 class MainWindow(wx.Frame):
