@@ -66,13 +66,22 @@ class SimpleForm:
         self.parent = parent
         self.rows = []
 
-    def add_input(self, label = ''):
-        label = wx.StaticText(self.parent, label=label)
-        input = wx.TextCtrl(self.parent)
-        self.rows.append([
-            (label, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL),
-            (input, 1, wx.EXPAND)
-        ])
+    def add_element(self, element, label = '', column = 1):
+        flags_col_0 = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
+        flags_col_1 = wx.EXPAND
+
+        if column == 1:
+            col_0 = wx.StaticText(self.parent, label=label)
+            col_1 = element
+        else:
+            col_0 = element
+            col_1 = 0
+
+        self.rows.append([(col_0, 0, flags_col_0), (col_1, 1, flags_col_1)])
+
+    def add_input(self, label = '', column = 1):
+        self.add_element(wx.TextCtrl(self.parent), label=label, column=column)
+
 
     def create_grid(self):
         fgs = wx.FlexGridSizer(
@@ -81,8 +90,8 @@ class SimpleForm:
             vgap = 10,
             hgap = 10
         )
-        flatten_rows = lambda flattened, row: flattened.extend(row), []
-        flattened_ros = functools.reduce(flatten_rows, self.rows)
+        flatten_rows = lambda flattened, row: [*flattened, *row]
+        flattened_ros = functools.reduce(flatten_rows, self.rows, [])
         fgs.AddMany(flattened_ros)
         fgs.AddGrowableCol(1, 1)
         return fgs
@@ -90,7 +99,7 @@ class SimpleForm:
     def create_box(self):
         return PaddedBox(self.create_grid())
 
-class RecipeTitleForm:
+class RecipeHeaderForm:
     def __init__(self, parent, title, meta = {}):
         form = SimpleForm(parent)
         form.add_input(label = 'Title')
@@ -105,7 +114,12 @@ class RecipeTitleForm:
 
 class RecipeForm:
     def __init__(self, parent):
-        RecipeTitleForm(wx.Panel(parent), 'Hello Worlds!')
+        meta_fields = {
+            'tags': {'label': 'Tags'},
+            'portions': {'label': 'Portions'},
+            'author': {'label': 'Author'},
+        }
+        RecipeHeaderForm(wx.Panel(parent), 'Hello Worlds!', meta_fields)
 
     def old(self):
         panel = wx.Panel(parent)
