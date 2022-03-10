@@ -61,35 +61,42 @@ class PaddedBox(wx.BoxSizer):
         super().__init__(orient)
         self.Add(child, proportion=proportion, flag=flag, border=border)
 
-class SimpleForm:
+class RowWiseFormRowFactory:
     def __init__(self, parent):
         self.parent = parent
-        self.rows = []
 
-    def add_element(self, element, label = '', column = 1):
+class RecipeHeaderRowFactory(RowWiseFormRowFactory):
+    def row(self, label = None, value = '', choices = None):
         flags_col_0 = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
         flags_col_1 = wx.EXPAND
 
-        if column == 1:
+        if choices != None:
+            element = wx.ComboBox(self.parent, choices=choices)
+        else:
+            element = wx.TextCtrl(self.parent, value=value)
+
+        if label != None:
             col_0 = wx.StaticText(self.parent, label=label)
             col_1 = element
         else:
             col_0 = element
             col_1 = 0
 
-        self.rows.append([(col_0, 0, flags_col_0), (col_1, 1, flags_col_1)])
+        return [(col_0, 0, flags_col_0), (col_1, 1, flags_col_1)]
 
-    def add_input(self, label = '', column = 1):
-        self.add_element(wx.TextCtrl(self.parent), label=label, column=column)
+class RowWiseForm:
+    def __init__(self, parent, row_factory_class):
+        self.parent = parent
+        self.rows = []
+        self.factory = row_factory_class(parent)
 
+    def add_row(self, *args, **kwargs):
+        self.rows.append(self.factory.row(*args, **kwargs))
 
     def create_grid(self):
-        fgs = wx.FlexGridSizer(
-            rows = len(self.rows),
-            cols = 2,
-            vgap = 10,
-            hgap = 10
-        )
+        nrows = len(self.rows)
+        ncols = len(self.rows[0]) if nrows > 0 else 0
+        fgs = wx.FlexGridSizer(rows = nrows, cols = ncols, vgap = 10, hgap = 10)
         flatten_rows = lambda flattened, row: [*flattened, *row]
         flattened_ros = functools.reduce(flatten_rows, self.rows, [])
         fgs.AddMany(flattened_ros)
@@ -101,15 +108,17 @@ class SimpleForm:
 
 class RecipeHeaderForm:
     def __init__(self, parent, title, meta = {}):
-        form = SimpleForm(parent)
-        form.add_input(label = 'Title')
+        form = RowWiseForm(parent, RecipeHeaderRowFactory)
+        form.add_row(label = 'Title', value = title)
 
         # label and input for all other meta fields
         for key in meta:
-            form.add_input(meta[key]['label'])
+            form.add_row(meta[key]['label'], meta[key].get('value', ''))
+
+        additional_meta_fields = ['blue', 'yellow', 'green', 'very long option']
+        form.add_row(choices = additional_meta_fields)
 
         parent.SetSizer(form.create_box())
-
 
 
 class RecipeForm:
