@@ -93,7 +93,20 @@ class RowWiseForm:
         self.factory = row_factory_class(parent)
         self.fgs = None
 
-    def add_row(self, *args, **kwargs):
+    def ncols(self):
+        return len(self.rows[0]) if len(self.rows) > 0 else 0
+
+    def insert_row(self, index, *args, **kwargs):
+        if index < 0: index = index + len(self.rows)
+        row = self.factory.row(*args, **kwargs)
+        self.rows.insert(index, row)
+        if self.fgs:
+            item_index = index * self.ncols()
+            for item in reversed(row):
+                self.fgs.Insert(item_index, *item)
+            self.fgs.Layout()
+
+    def append_row(self, *args, irow = None, **kwargs):
         row = self.factory.row(*args, **kwargs)
         self.rows.append(row)
         if self.fgs:
@@ -101,8 +114,7 @@ class RowWiseForm:
             self.fgs.Layout()
 
     def create_grid(self):
-        ncols = len(self.rows[0]) if len(self.rows) else 0
-        self.fgs = wx.FlexGridSizer(cols = ncols, vgap = 10, hgap = 10)
+        self.fgs = wx.FlexGridSizer(cols = self.ncols(), vgap = 10, hgap = 10)
         flatten_rows = lambda flattened, row: [*flattened, *row]
         flattened_ros = functools.reduce(flatten_rows, self.rows, [])
         self.fgs.AddMany(flattened_ros)
@@ -116,19 +128,19 @@ class RowWiseForm:
 class RecipeHeaderForm:
     def __init__(self, parent, title, meta = {}):
         self.form = RowWiseForm(parent, RecipeHeaderRowFactory)
-        self.form.add_row(label = 'Title', value = title)
+        self.form.append_row(label = 'Title', value = title)
 
         # label and input for all other meta fields
         for key in meta:
-            self.form.add_row(meta[key]['label'], meta[key].get('value', ''))
+            self.form.append_row(meta[key]['label'], meta[key].get('value', ''))
 
         choices = ['blue', 'yellow', 'green', 'very long option']
-        self.form.add_row(choices = choices, callback = self.onAddMeta)
+        self.form.append_row(choices = choices, callback = self.onAddMeta)
 
         parent.SetSizer(self.form.create_box())
 
     def onAddMeta(self, event, combobox):
-        self.form.add_row(label = combobox.GetValue())
+        self.form.insert_row(-1, label = combobox.GetValue())
 
 
 class RecipeForm:
