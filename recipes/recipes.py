@@ -95,9 +95,8 @@ class RowWiseForm:
         self.rows.append(self.factory.row(*args, **kwargs))
 
     def create_grid(self):
-        nrows = len(self.rows)
-        ncols = len(self.rows[0]) if nrows > 0 else 0
-        fgs = wx.FlexGridSizer(rows = nrows, cols = ncols, vgap = 10, hgap = 10)
+        ncols = len(self.rows[0]) if len(self.rows) else 0
+        fgs = wx.FlexGridSizer(cols = ncols, vgap = 10, hgap = 10)
         flatten_rows = lambda flattened, row: [*flattened, *row]
         flattened_ros = functools.reduce(flatten_rows, self.rows, [])
         fgs.AddMany(flattened_ros)
