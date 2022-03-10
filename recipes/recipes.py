@@ -72,7 +72,8 @@ class RecipeHeaderRowFactory(RowWiseFormRowFactory):
 
         if choices != None:
             element = wx.ComboBox(self.parent, choices=choices)
-            element.Bind(wx.EVT_COMBOBOX, callback)
+            callback_with_element = lambda event: callback(event, element)
+            element.Bind(wx.EVT_COMBOBOX, callback_with_element)
         else:
             element = wx.TextCtrl(self.parent, value=value)
 
@@ -90,38 +91,44 @@ class RowWiseForm:
         self.parent = parent
         self.rows = []
         self.factory = row_factory_class(parent)
+        self.fgs = None
 
     def add_row(self, *args, **kwargs):
-        self.rows.append(self.factory.row(*args, **kwargs))
+        row = self.factory.row(*args, **kwargs)
+        self.rows.append(row)
+        if self.fgs:
+            self.fgs.AddMany(row)
+            self.fgs.Layout()
 
     def create_grid(self):
         ncols = len(self.rows[0]) if len(self.rows) else 0
-        fgs = wx.FlexGridSizer(cols = ncols, vgap = 10, hgap = 10)
+        self.fgs = wx.FlexGridSizer(cols = ncols, vgap = 10, hgap = 10)
         flatten_rows = lambda flattened, row: [*flattened, *row]
         flattened_ros = functools.reduce(flatten_rows, self.rows, [])
-        fgs.AddMany(flattened_ros)
-        fgs.AddGrowableCol(1, 1)
-        return fgs
+        self.fgs.AddMany(flattened_ros)
+        self.fgs.AddGrowableCol(1, 1)
+        self.created = True
+        return self.fgs
 
     def create_box(self):
         return PaddedBox(self.create_grid())
 
 class RecipeHeaderForm:
     def __init__(self, parent, title, meta = {}):
-        form = RowWiseForm(parent, RecipeHeaderRowFactory)
-        form.add_row(label = 'Title', value = title)
+        self.form = RowWiseForm(parent, RecipeHeaderRowFactory)
+        self.form.add_row(label = 'Title', value = title)
 
         # label and input for all other meta fields
         for key in meta:
-            form.add_row(meta[key]['label'], meta[key].get('value', ''))
+            self.form.add_row(meta[key]['label'], meta[key].get('value', ''))
 
         choices = ['blue', 'yellow', 'green', 'very long option']
-        form.add_row(choices = choices, callback = self.onSelectAddMetaField)
+        self.form.add_row(choices = choices, callback = self.onAddMeta)
 
-        parent.SetSizer(form.create_box())
+        parent.SetSizer(self.form.create_box())
 
-    def onSelectAddMetaField(self, event):
-        print(event)
+    def onAddMeta(self, event, combobox):
+        self.form.add_row(label = combobox.GetValue())
 
 
 class RecipeForm:
