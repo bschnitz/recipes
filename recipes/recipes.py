@@ -66,12 +66,13 @@ class RowWiseFormRowFactory:
         self.parent = parent
 
 class RecipeHeaderRowFactory(RowWiseFormRowFactory):
-    def row(self, label = None, value = '', choices = None):
+    def row(self, label = None, value = '', choices = None, callback = None):
         flags_col_0 = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
         flags_col_1 = wx.EXPAND
 
         if choices != None:
             element = wx.ComboBox(self.parent, choices=choices)
+            element.Bind(wx.EVT_COMBOBOX, callback)
         else:
             element = wx.TextCtrl(self.parent, value=value)
 
@@ -115,10 +116,13 @@ class RecipeHeaderForm:
         for key in meta:
             form.add_row(meta[key]['label'], meta[key].get('value', ''))
 
-        additional_meta_fields = ['blue', 'yellow', 'green', 'very long option']
-        form.add_row(choices = additional_meta_fields)
+        choices = ['blue', 'yellow', 'green', 'very long option']
+        form.add_row(choices = choices, callback = self.onSelectAddMetaField)
 
         parent.SetSizer(form.create_box())
+
+    def onSelectAddMetaField(self, event):
+        print(event)
 
 
 class RecipeForm:
