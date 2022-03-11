@@ -1,4 +1,5 @@
 import wx
+import re
 import functools
 from recipes.gui.form.framework import PaddedBox
 from recipes.gui.form.framework import FlexGridSizer
@@ -13,38 +14,39 @@ class RowWiseForm:
     def ncols(self):
         return len(self.rows[0]) if len(self.rows) > 0 else 0
 
-    def insert_row(self, index, *args, **kwargs):
+    def __getattr__(self, name):
+        match = re.match('(insert|append)_(.*)', name)
+
+        if not match: raise AttributeError(name)
+
+        return getattr(self, match[1])(match[2])
+
+    def append(self, factory_method_name):
+        def append(*args, **kwargs):
+            row = getattr(self.factory, factory_method_name)(*args, **kwargs)
+            self.append_row(row)
+        return append
+
+    def insert(self, factory_method_name):
+        def insert(index, *args, **kwargs):
+            row = getattr(self.factory, factory_method_name)(*args, **kwargs)
+            self.insert_row(index, row)
+        return insert
+
+    def append_row(self, row):
+        self.rows.append(row)
+        if self.fgs:
+            self.fgs.AddMany(row)
+            self.fgs.Layout()
+
+    def insert_row(self, index, row):
         if index < 0: index = index + len(self.rows)
-        row = self.factory.row(*args, **kwargs)
         self.rows.insert(index, row)
         if self.fgs:
             item_index = index * self.ncols()
             for item in reversed(row):
                 self.fgs.Insert(item_index, *item)
-                self.correct_tab_order(item_index)
-            self.fgs.Layout()
-
-    def correct_tab_order(self, index):
-        if not self.fgs: return
-
-        win = self.fgs.get_window_at(index)
-        if not win: return
-
-        prev = self.fgs.get_window_before(index)
-        if prev:
-            win.MoveAfterInTabOrder(prev)
-            return
-
-        next = self.fgs.get_window_after(index)
-        if next:
-            win.MoveBeforeInTabOrder(next)
-            return
-
-    def append_row(self, *args, irow = None, **kwargs):
-        row = self.factory.row(*args, **kwargs)
-        self.rows.append(row)
-        if self.fgs:
-            self.fgs.AddMany(row)
+                self.fgs.normalize_tab_order_for_window_at_index(item_index)
             self.fgs.Layout()
 
     def create_grid(self):
