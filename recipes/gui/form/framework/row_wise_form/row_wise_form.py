@@ -1,6 +1,7 @@
 import wx
 import functools
 from recipes.gui.form.framework import PaddedBox
+from recipes.gui.form.framework import FlexGridSizer
 
 class RowWiseForm:
     def __init__(self, parent, row_factory_class):
@@ -24,37 +25,20 @@ class RowWiseForm:
             self.fgs.Layout()
 
     def correct_tab_order(self, index):
-        win = self.get_window_at(index)
+        if not self.fgs: return
+
+        win = self.fgs.get_window_at(index)
         if not win: return
 
-        prev = self.get_window_before(index)
+        prev = self.fgs.get_window_before(index)
         if prev:
             win.MoveAfterInTabOrder(prev)
             return
 
-        next = self.get_window_after(index)
+        next = self.fgs.get_window_after(index)
         if next:
             win.MoveBeforeInTabOrder(next)
             return
-
-    def get_window_at(self, index):
-        if not self.fgs: return
-
-        item = self.fgs.GetItem(index)
-
-        if not item: return
-
-        return item.GetWindow()
-
-    def get_window_before(self, index):
-        for i in reversed(range(0, index)):
-            win = self.get_window_at(i)
-            if win: return win
-
-    def get_window_after(self, index):
-        for i in range(index+1, self.ncols() * len(self.rows)):
-            win = self.get_window_at(i)
-            if win: return win
 
     def append_row(self, *args, irow = None, **kwargs):
         row = self.factory.row(*args, **kwargs)
@@ -64,7 +48,7 @@ class RowWiseForm:
             self.fgs.Layout()
 
     def create_grid(self):
-        self.fgs = wx.FlexGridSizer(cols = self.ncols(), vgap = 10, hgap = 10)
+        self.fgs = FlexGridSizer(cols = self.ncols(), vgap = 10, hgap = 10)
         flatten_rows = lambda flattened, row: [*flattened, *row]
         flattened_ros = functools.reduce(flatten_rows, self.rows, [])
         self.fgs.AddMany(flattened_ros)
