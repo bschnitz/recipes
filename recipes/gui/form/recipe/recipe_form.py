@@ -5,9 +5,9 @@ from recipes.gui.form.recipe.header import RecipeHeader
 class RecipeForm:
     def __init__(self, parent):
         meta_fields = {
-            'tags': {'label': 'Tags'},
-            'portions': {'label': 'Portions'},
-            'author': {'label': 'Author'},
+            'tags': {'label': 'Tags', 'value': 'tags'},
+            'portions': {'label': 'Portions', 'value': 'portions'},
+            'author': {'label': 'Author', 'value': 'author'},
         }
         RecipeHeader(wx.Panel(parent), 'Hello Worlds!', meta_fields)
 

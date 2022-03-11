@@ -20,7 +20,41 @@ class RowWiseForm:
             item_index = index * self.ncols()
             for item in reversed(row):
                 self.fgs.Insert(item_index, *item)
+                self.correct_tab_order(item_index)
             self.fgs.Layout()
+
+    def correct_tab_order(self, index):
+        win = self.get_window_at(index)
+        if not win: return
+
+        prev = self.get_window_before(index)
+        if prev:
+            win.MoveAfterInTabOrder(prev)
+            return
+
+        next = self.get_window_after(index)
+        if next:
+            win.MoveBeforeInTabOrder(next)
+            return
+
+    def get_window_at(self, index):
+        if not self.fgs: return
+
+        item = self.fgs.GetItem(index)
+
+        if not item: return
+
+        return item.GetWindow()
+
+    def get_window_before(self, index):
+        for i in reversed(range(0, index)):
+            win = self.get_window_at(i)
+            if win: return win
+
+    def get_window_after(self, index):
+        for i in range(index+1, self.ncols() * len(self.rows)):
+            win = self.get_window_at(i)
+            if win: return win
 
     def append_row(self, *args, irow = None, **kwargs):
         row = self.factory.row(*args, **kwargs)

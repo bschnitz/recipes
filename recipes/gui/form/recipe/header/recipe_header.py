@@ -16,4 +16,4 @@ class RecipeHeader:
         parent.SetSizer(self.form.create_box())
 
     def onAddMeta(self, event, combobox):
-        self.form.insert_row(-1, label = combobox.GetValue())
+        self.form.insert_row(-1, label = combobox.GetValue(), value = combobox.GetValue())
