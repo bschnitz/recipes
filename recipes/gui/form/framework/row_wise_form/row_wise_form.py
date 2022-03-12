@@ -54,7 +54,6 @@ class RowWiseForm:
         flatten_rows = lambda flattened, row: [*flattened, *row]
         flattened_ros = functools.reduce(flatten_rows, self.rows, [])
         self.fgs.AddMany(flattened_ros)
-        self.fgs.AddGrowableCol(1, 1)
         self.created = True
         return self.fgs
 

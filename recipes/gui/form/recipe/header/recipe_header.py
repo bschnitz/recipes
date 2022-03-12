@@ -16,6 +16,7 @@ class RecipeHeader:
         self.form.append_combo(choices, self.onAddMeta)
 
         parent.SetSizer(self.form.create_box())
+        self.form.fgs.AddGrowableCol(1)
 
     def onAddMeta(self, event, combobox):
         self.form.insert_attribute(-1, combobox.GetValue(), combobox.GetValue())

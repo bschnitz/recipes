@@ -4,6 +4,7 @@ import wx
 import re
 
 from recipes.gui.form.recipe import RecipeForm
+from recipes.gui.form.recipe.ingredients import IngredientSection
 
 class MainWindow(wx.Frame):
     def __init__(self, title='', parent=None):

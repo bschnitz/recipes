@@ -1,6 +1,7 @@
 import wx
 
 from recipes.gui.form.recipe.header import RecipeHeader
+from recipes.gui.form.recipe.ingredients import IngredientSection
 
 class RecipeForm:
     def __init__(self, parent):
@@ -9,22 +10,14 @@ class RecipeForm:
             'portions': {'label': 'Portions', 'value': 'portions'},
             'author': {'label': 'Author', 'value': 'author'},
         }
-        RecipeHeader(wx.Panel(parent), 'Hello Worlds!', meta_fields)
 
-    def old(self):
-        panel = wx.Panel(parent)
-        fgs = wx.FlexGridSizer(3, 2, 10,10)
+        header = wx.Panel(parent)
+        ingredients = wx.Panel(parent)
 
-        title = wx.StaticText(panel, label = "Title")
-        author = wx.StaticText(panel, label = "Name of the Author")
-        review = wx.StaticText(panel, label = "Review")
+        RecipeHeader(header, 'Hello Worlds!', meta_fields)
+        IngredientSection(ingredients)
 
-        tc1 = wx.TextCtrl(panel)
-        tc2 = wx.TextCtrl(panel)
-        tc3 = wx.TextCtrl(panel, style = wx.TE_MULTILINE)
-
-        fgs.AddMany([(title), (tc1, 1, wx.EXPAND),
-                     (author), (tc2, 1, wx.EXPAND),
-                     (review, 1, wx.EXPAND), (tc3, 1, wx.EXPAND)])
-        fgs.AddGrowableRow(2, 1)
-        fgs.AddGrowableCol(1, 1)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox.Add(header, 1, wx.EXPAND)
+        vbox.Add(ingredients, 1, wx.EXPAND)
+        parent.SetSizer(vbox)
