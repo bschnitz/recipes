@@ -20,11 +20,8 @@ class AutoResizeTextCtrl(wx.TextCtrl):
         return to_small or to_big
 
     def auto_resize(self):
-        width = self.get_width()
         fit_width = self.get_fit_width()
-        to_small = fit_width + self.add_width > width
-        to_big = fit_width + self.add_width < width
-        if to_small or to_big:
+        if self.has_to_resize():
             new_width = max(self.min_auto_width, fit_width + self.add_width)
             self.set_min_width(new_width)
             return True

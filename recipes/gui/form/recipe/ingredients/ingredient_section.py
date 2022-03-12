@@ -1,7 +1,6 @@
 import wx
 
 from recipes.gui.form.framework import RowWiseForm
-from recipes.gui.form.framework import AutoResizeTextCtrl
 from recipes.gui.form.recipe.ingredients import IngredientSectionRowFactory
 
 class IngredientSection:
