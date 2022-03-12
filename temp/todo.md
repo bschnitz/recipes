@@ -1,0 +1,5 @@
+- Recipe title as big title
+- titles for ingredient sections
+- autoresize textctrl after intialization
+- start with instruction sections
+- have a minimum width for all input fields in ingredient section (if window is too small)

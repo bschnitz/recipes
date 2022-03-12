@@ -3,6 +3,7 @@ from recipes.gui.form.recipe.header import RecipeHeaderRowFactory
 
 class RecipeHeader:
     def __init__(self, parent, title, meta = {}):
+        self.parent = parent
         self.form = RowWiseForm(parent, RecipeHeaderRowFactory)
         self.form.append_attribute('Title', title)
 
@@ -20,3 +21,4 @@ class RecipeHeader:
 
     def onAddMeta(self, event, combobox):
         self.form.insert_attribute(-1, combobox.GetValue(), combobox.GetValue())
+        self.parent.GetParent().Layout()
