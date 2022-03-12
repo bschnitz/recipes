@@ -1,2 +1,5 @@
+- Section Title field for IngredientSection
+- parser for meal master recipes
 - have a minimum width for all input fields in ingredient section (if window is too small)
-- reasonable initial sizes for recipe form textctrl fields
+- reasonable initial sizes for various recipe form textctrl fields
+- images? videos?
