@@ -12,4 +12,3 @@ class TitleBox(wx.BoxSizer):
 
         self.Add(title, flag=flag|wx.BOTTOM, border=math.floor(font_height*0.3))
         self.Add(child, flag=flag)
-        print(child)

@@ -2,6 +2,7 @@ import wx
 
 from recipes.gui.form.recipe.header import RecipeHeader
 from recipes.gui.form.recipe.ingredients import IngredientSection
+from recipes.gui.form.recipe.instructions import InstructionSection
 
 class RecipeForm:
     def __init__(self, parent):
@@ -14,13 +15,17 @@ class RecipeForm:
 
         header = wx.Panel(scrolled_window)
         ingredients = wx.Panel(scrolled_window)
+        instructions = wx.Panel(scrolled_window)
 
         RecipeHeader(header, 'Hello Worlds!', meta_fields)
         IngredientSection(ingredients)
+        InstructionSection(instructions)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add(header, 0, wx.EXPAND|wx.ALIGN_TOP)
         vbox.Add(ingredients, 0, wx.EXPAND|wx.ALIGN_TOP)
+        vbox.Add(instructions, 0, wx.EXPAND|wx.ALIGN_TOP)
+
         scrolled_window.SetSizer(vbox)
         fontsz = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FONT).GetPixelSize()
         scrolled_window.SetScrollRate(fontsz.x, fontsz.y)
