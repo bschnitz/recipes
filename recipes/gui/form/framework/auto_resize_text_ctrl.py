@@ -6,6 +6,7 @@ class AutoResizeTextCtrl(wx.TextCtrl):
         self.min_auto_width = self.get_width()
         self.Bind(wx.EVT_KEY_UP, self.on_key_up)
         self.add_width = 10
+        self.auto_resize()
 
     def on_key_up(self, event):
         if self.auto_resize():
