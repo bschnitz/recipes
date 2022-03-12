@@ -1,5 +1,8 @@
 import wx
 
+from recipes.gui.fonts import Head2
+from recipes.gui.form.framework import TitleBox
+from recipes.gui.form.framework import PaddedBox
 from recipes.gui.form.framework import RowWiseForm
 from recipes.gui.form.recipe.ingredients import IngredientSectionRowFactory
 
@@ -10,7 +13,10 @@ class IngredientSection:
         self.form.append_ingredient(1.5, 'very long teaspoons', 'water')
         self.form.append_ingredient(10, '', 'eggs')
         self.form.append_ingredient(1, '', '', callback=None)
-        parent.SetSizer(self.form.create_box())
+
+        title = 'Ingredients for first meal'
+        titled_box = TitleBox(self.form.create_grid(), parent, title, Head2())
+        parent.SetSizer(PaddedBox(titled_box))
         self.form.fgs.AddGrowableCol(2)
 
     def on_user_input(self, event, element):

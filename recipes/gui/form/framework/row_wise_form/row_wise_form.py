@@ -50,6 +50,8 @@ class RowWiseForm:
             self.fgs.Layout()
 
     def create_grid(self):
+        if self.fgs: return self.fgs
+
         self.fgs = FlexGridSizer(cols = self.ncols(), vgap = 10, hgap = 10)
         flatten_rows = lambda flattened, row: [*flattened, *row]
         flattened_ros = functools.reduce(flatten_rows, self.rows, [])

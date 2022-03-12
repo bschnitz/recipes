@@ -3,7 +3,7 @@ import wx
 class PaddedBox(wx.BoxSizer):
     def __init__(self,
                  child,
-                 orient=wx.HORIZONTAL,
+                 orient=wx.VERTICAL,
                  proportion=2,
                  flag=wx.ALL|wx.EXPAND,
                  border=15):

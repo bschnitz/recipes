@@ -1,4 +1,3 @@
-- Recipe title as big title
-- titles for ingredient sections
 - start with instruction sections
 - have a minimum width for all input fields in ingredient section (if window is too small)
+- reasonable initial sizes for recipe form textctrl fields
