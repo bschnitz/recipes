@@ -1,5 +1,7 @@
 # Recipes
 
+__This project is still in developement and not usable yet.__
+
 Manages your recipes and adds tools to help You with cooking, too :) .
 
 ## Run (without Installation)
