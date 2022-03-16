@@ -22,14 +22,15 @@ class FileLineIterator():
             self.file.close()
 
 class MealMaster(object):
-    RE_BLOCK_START   = re.compile(r'^(-----|MMMMM).*Meal-Master')
-    RE_TITLE         = re.compile(r'Title:\s*(.*\S)\s*')
-    RE_CATEGORIES    = re.compile(r'Categories:\s*(.*\S)\s*')
-    RE_SERVINGS      = re.compile(r'(Servings|Yield|Portions):\s*(\d+){1}\s*(.*\S){0,1}')
-    RE_SECTION_TITLE = re.compile(r'([^-].*[^-\s])[\s-]*$')
-    RE_BLANK_LINE    = re.compile(r'^\s*$')
-    RE_INGREDIENT    = re.compile(r'^\s*([ \d./]{7}) ([a-zA-Z ]{2}) \s*(.*\S).*')
-    RE_INGREDIENTS   = re.compile(r'^\s*([ \d./]{7}) ([a-zA-Z ]{2}) \s*([^\-].*\S).*')
+    RE_BLOCK_START    = re.compile(r'^(-----|MMMMM).*Meal-Master')
+    RE_TITLE          = re.compile(r'Title:\s*(.*\S)\s*')
+    RE_CATEGORIES     = re.compile(r'Categories:\s*(.*\S)\s*')
+    RE_SERVINGS       = re.compile(r'(Servings|Yield|Portions):\s*(\d+){1}\s*(.*\S){0,1}')
+    RE_SECTION_TITLE  = re.compile(r'([^-].*[^-\s])[\s-]*$')
+    RE_BLANK_LINE     = re.compile(r'^\s*$')
+    RE_NOT_BLANK_LINE = re.compile(r'\S+')
+    RE_INGREDIENT     = re.compile(r'^\s*([ \d./]{7}) ([a-zA-Z ]{2}) \s*(.*\S).*')
+    RE_INGREDIENTS    = re.compile(r'^\s*([ \d./]{7}) ([a-zA-Z ]{2}) \s*([^\-].*\S).*')
     RE_INGREDIENT_SECOND_COLUMN = re.compile(r'(.*)([ \d./]{7}) ([a-zA-Z ]{2}) \s*([^\-\s].*\S).*')
     RE_INGREDIENT_CONTINUATIONS = re.compile(r'^\s* {11}-+(.*)')
     RE_INGREDIENT_CONTINUATION_SECOND_COLUMN = re.compile(r'(.*) {11}-+(.*)')
@@ -70,6 +71,7 @@ class MealMaster(object):
 
         while True:
             line = next(line_iterator, None)
+
             if line == None or self.is_block_end(line): break
 
             lines.append(line)
@@ -116,12 +118,13 @@ class MealMaster(object):
         return [sections, lines]
 
     def parse_ingredient_section(self, lines):
-        i_section_start = self.find_index(lines, self.ingredient_section_start)
+        i_section_start = self.find_index(lines, self.is_not_blank)
 
-        if i_section_start == None: return [None, None]
+        line = lines[i_section_start]
+        if i_section_start == None or not self.ingredient_section_start(line):
+            return [None, None]
 
-        section_start_line = lines[i_section_start]
-        title = self.section_title(section_start_line)
+        title = self.section_title(line)
 
         # found a section title, but it actually was no ingredient section
         if title and not self.find_index(lines, self.ingredients):
@@ -184,16 +187,18 @@ class MealMaster(object):
         continuation = self.ingredient_continuation(line)
         if continuation: return [{}, continuation]
 
-        amount, unit, rest = self.ingredient(line)
+        ingredient = self.ingredient(line)
 
-        if amount == None: return [None, None]
+        if ingredient == None: return [None, None]
+
+        amount, unit, rest = ingredient
 
         return [{'amount': amount, 'unit': unit}, rest]
 
     def ingredient(self, line):
         match = re.search(self.RE_INGREDIENT, line)
 
-        if not match: return [None, None, None]
+        if not match: return None
 
         return [match[1].strip(), match[2].strip(), match[3].strip()]
 
@@ -337,7 +342,7 @@ class MealMaster(object):
         return [first, second]
 
     def ingredient_section_start(self, line):
-        return self.section_title(line) or self.ingredients(line)
+        return self.section_title(line) or self.ingredient(line)
 
     def ingredient_continuations(self, line):
         match = re.search(self.RE_INGREDIENT_CONTINUATIONS, line)
@@ -348,6 +353,9 @@ class MealMaster(object):
 
     def is_blank(self, line):
         return re.search(self.RE_BLANK_LINE, line)
+
+    def is_not_blank(self, line):
+        return re.search(self.RE_NOT_BLANK_LINE, line)
 
     # ---- utility functions
 
