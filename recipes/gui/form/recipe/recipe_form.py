@@ -4,18 +4,19 @@ from recipes.gui.form.recipe.header import RecipeHeader
 from recipes.gui.form.recipe.ingredients import IngredientSection
 from recipes.gui.form.recipe.instructions import InstructionSection
 
-class RecipeForm:
+class RecipeForm(wx.ScrolledWindow):
     def __init__(self, parent):
+        super().__init__(parent)
+
         meta_fields = {
             'tags': {'label': 'Tags', 'value': 'tags'},
             'portions': {'label': 'Portions', 'value': 'portions'},
             'author': {'label': 'Author', 'value': 'author'},
         }
-        scrolled_window = wx.ScrolledWindow(parent)
 
-        header = wx.Panel(scrolled_window)
-        ingredients = wx.Panel(scrolled_window)
-        instructions = wx.Panel(scrolled_window)
+        header = wx.Panel(self)
+        ingredients = wx.Panel(self)
+        instructions = wx.Panel(self)
 
         RecipeHeader(header, 'Hello Worlds!', meta_fields)
         IngredientSection(ingredients)
@@ -26,7 +27,7 @@ class RecipeForm:
         vbox.Add(ingredients, 0, wx.EXPAND|wx.ALIGN_TOP)
         vbox.Add(instructions, 0, wx.EXPAND|wx.ALIGN_TOP)
 
-        scrolled_window.SetSizer(vbox)
+        self.SetSizer(vbox)
         fontsz = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FONT).GetPixelSize()
-        scrolled_window.SetScrollRate(fontsz.x, fontsz.y)
-        scrolled_window.EnableScrolling(True,True)
+        self.SetScrollRate(fontsz.x, fontsz.y)
+        self.EnableScrolling(True,True)

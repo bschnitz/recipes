@@ -6,7 +6,7 @@ from charset_normalizer import from_path
 from recipes.core.util import Recipe
 from chardet.universaldetector import UniversalDetector
 
-class FileLineIterator():
+class FileLineIterator(object):
     def __init__(self, path, encoding='utf-8'):
         self.encoding = encoding
         self.path = path
@@ -41,20 +41,6 @@ class MealMaster(object):
         with FileLineIterator(path, encoding) as lines:
             while (recipe := self.read_recipe(lines)):
                 self.recipes.append(recipe)
-
-    def detect_encoding(self, path):
-        lines = str(from_path(path).best()).splitlines()
-        print(lines[0])
-        exit(0)
-
-    def detect_encoding_a(self, path):
-        detector = UniversalDetector()
-        with open(path, 'rb') as file:
-            for line in file:
-                detector.feed(line)
-                if detector.done: break
-        detector.close()
-        return detector.result['encoding']
 
     def read_recipe(self, line_iterator):
         return self.parse_recipe_lines(self.read_recipe_lines(line_iterator))
