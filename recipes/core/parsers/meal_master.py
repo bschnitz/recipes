@@ -68,7 +68,10 @@ class MealMaster(object):
 
         lines = [first_line]
 
-        while (line := next(line_iterator, None)) and not self.is_block_end(line):
+        while True:
+            line = next(line_iterator, None)
+            if line == None or self.is_block_end(line): break
+
             lines.append(line)
 
         return lines
