@@ -28,14 +28,10 @@ class MealMaster(object):
     RE_SERVINGS       = re.compile(r'(Servings|Yield|Portions):\s*(\d+){1}\s*(.*\S){0,1}')
     RE_SECTION_TITLE  = re.compile(r'([^-].*[^-\s])[\s-]*$')
     RE_BLANK_LINE     = re.compile(r'^\s*$')
-    RE_NOT_BLANK_LINE = re.compile(r'\S+')
     RE_INGREDIENT     = re.compile(r'^\s*([ \d./]{7}) ([a-zA-Z ]{2}) \s*(.*\S).*')
-    RE_INGREDIENTS    = re.compile(r'^\s*([ \d./]{7}) ([a-zA-Z ]{2}) \s*([^\-].*\S).*')
     RE_INGREDIENT_SECOND_COLUMN = re.compile(r'(.*)([ \d./]{7}) ([a-zA-Z ]{2}) \s*([^\-\s].*\S).*')
     RE_INGREDIENT_CONTINUATIONS = re.compile(r'^\s* {11}-+(.*)')
     RE_INGREDIENT_CONTINUATION_SECOND_COLUMN = re.compile(r'(.*) {11}-+(.*)')
-
-    RE_INGREDIENT_CONTINUATION = re.compile(r'^\s* {11}-+(.*)')
 
     def __init__(self):
         self.separator = None
@@ -118,24 +114,25 @@ class MealMaster(object):
         return [sections, lines]
 
     def parse_ingredient_section(self, lines):
-        i_section_start = self.find_index(lines, self.is_not_blank)
+        title, lines = self.find_ingredient_section_start(lines)
 
-        line = lines[i_section_start]
-        if i_section_start == None or not self.ingredient_section_start(line):
-            return [None, None]
-
-        title = self.section_title(line)
-
-        # found a section title, but it actually was no ingredient section
-        if title and not self.find_index(lines, self.ingredients):
-            return [None, None]
-
-        # found an ingredient section title, ingredient lines will follow
-        if title: _, title, lines = self.split_lines(lines, self.section_title)
+        if not lines: return [None, None]
 
         ingredients, rest = self.parse_ingredient_lines(lines)
 
         return [{ 'title': title, 'ingredients': ingredients }, rest]
+
+    def find_ingredient_section_start(self, lines):
+        lines = self.skip_blank_lines(lines)
+
+        if not lines: return [None, None]
+
+        title = self.section_title(lines[0])
+        if title: lines = self.skip_blank_lines(lines[1:])
+
+        if not self.ingredient(lines[0]): return [None, None]
+
+        return title, lines
 
     def parse_ingredient_lines(self, lines):
         ingredient_columns, rest = self.collect_ingredient_columns(lines)
@@ -195,13 +192,6 @@ class MealMaster(object):
 
         return [{'amount': amount, 'unit': unit}, rest]
 
-    def ingredient(self, line):
-        match = re.search(self.RE_INGREDIENT, line)
-
-        if not match: return None
-
-        return [match[1].strip(), match[2].strip(), match[3].strip()]
-
     def ingredient_second_column(self, string):
         first, continuation = self.ingredient_continuation_second_column(string)
         if continuation != None: return [first, {'continuation': continuation}]
@@ -213,54 +203,6 @@ class MealMaster(object):
                    'unit': match[3].strip(),
                    'ingredient': match[4] }
         return [ match[1].strip(), second ]
-
-    def ingredient_continuation_second_column(self, text):
-        match = re.search(self.RE_INGREDIENT_CONTINUATION_SECOND_COLUMN, text)
-
-        if match: return [match[1].strip(), match[2].strip()]
-
-        return [None, None]
-
-    def ingredient_continuation(self, line):
-        match = re.search(self.RE_INGREDIENT_CONTINUATIONS, line)
-
-        if match: return match[1]
-
-        return None
-
-    def parse_ingredient_line_and_continuations(self, lines):
-        _, ingredients, rest = self.split_lines(lines, self.ingredients)
-
-        if not ingredients: return [None, lines]
-
-        continuations, rest = self.parse_ingredient_continuations(rest)
-        ingredients = self.merge_ingredients_with_continuations(ingredients, continuations)
-
-        # test if this is only a single column ingredient section:
-        if not ingredients[1]: ingredients = [ingredients[0]]
-
-
-        return [ingredients, rest]
-
-    def parse_ingredient_continuations(self, lines):
-        continuations = []
-
-        index = 0
-        for index, line in enumerate(lines):
-            continuation = self.ingredient_continuations(line)
-            if not continuation: break
-            continuations.append(continuation)
-
-        return [continuations, lines[index:]]
-
-    def merge_ingredients_with_continuations(self, ingredients, continuations):
-        for continuation in continuations:
-            for index, ingredient in enumerate(ingredients):
-                if not ingredient['ingredient'] or not continuation[index]:
-                    continue
-                ingredient['ingredient'] += ' ' + continuation[index]
-
-        return ingredients
 
     def parse_instruction_sections(self, lines):
         lines = self.skip_blank_lines(lines)
@@ -298,6 +240,27 @@ class MealMaster(object):
 
     # ---- function for detecting and extracting from Meal-Master syntax
 
+    def ingredient_continuation_second_column(self, text):
+        match = re.search(self.RE_INGREDIENT_CONTINUATION_SECOND_COLUMN, text)
+
+        if match: return [match[1].strip(), match[2].strip()]
+
+        return [None, None]
+
+    def ingredient(self, line):
+        match = re.search(self.RE_INGREDIENT, line)
+
+        if not match: return None
+
+        return [match[1].strip(), match[2].strip(), match[3].strip()]
+
+    def ingredient_continuation(self, line):
+        match = re.search(self.RE_INGREDIENT_CONTINUATIONS, line)
+
+        if match: return match[1]
+
+        return None
+
     # start of a recipe block (block = one whole recipe) returns the separator
     def block_start(self, line):
         match = re.match(self.RE_BLOCK_START, line)
@@ -328,34 +291,11 @@ class MealMaster(object):
         match = re.search(self.RE_SECTION_TITLE, line[len(self.separator):])
         if match: return match[1].strip()
 
-    def ingredients(self, line):
-        match = re.search(self.RE_INGREDIENTS, line)
-
-        if not match: return
-
-        rest, second = self.ingredient_second_column(match[3])
-
-        first = { 'amount': match[1].strip(),
-                  'unit': match[2].strip(),
-                  'ingredient': rest or match[3] }
-
-        return [first, second]
-
-    def ingredient_section_start(self, line):
+    def check_ingredient_section_start(self, line):
         return self.section_title(line) or self.ingredient(line)
-
-    def ingredient_continuations(self, line):
-        match = re.search(self.RE_INGREDIENT_CONTINUATIONS, line)
-
-        if match:
-            continuation = self.ingredient_continuation_second_column(match[1])
-            return  continuation or [match[1].strip(), None]
 
     def is_blank(self, line):
         return re.search(self.RE_BLANK_LINE, line)
-
-    def is_not_blank(self, line):
-        return re.search(self.RE_NOT_BLANK_LINE, line)
 
     # ---- utility functions
 
