@@ -42,7 +42,7 @@ class MealMaster(object):
         self.recipes = []
 
     def parse_file(self, path, encoding='utf-8'):
-        with FileLineIterator(path, 'auto') as lines:
+        with FileLineIterator(path, encoding) as lines:
             while (recipe := self.read_recipe(lines)):
                 self.recipes.append(recipe)
 
