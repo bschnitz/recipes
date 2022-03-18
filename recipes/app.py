@@ -28,7 +28,10 @@ class MainWindow(wx.Frame):
         menu_callback_map[event.GetId()](event)
 
     def on_import_meal_master(self, event):
-        ImportMealMasterDialog(self).run()
+        dialog = ImportMealMasterDialog(self)
+        dialog.ShowModal()
+        print(dialog.get_path())
+        print(dialog.get_encoding())
 
 def run():
     app = wx.App()

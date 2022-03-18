@@ -13,11 +13,11 @@ class ImportMealMasterDialog(wx.Dialog):
         super().__init__(parent, title='Import MealMaster file')
         self.add_elements()
 
-    def run(self):
-        self.ShowModal()
-        #path = self.GetPath()
-        self.Destroy()
-        #return path
+    def get_path(self):
+        return self.path_ctrl.GetValue()
+
+    def get_encoding(self):
+        return self.encoding_combo.GetValue()
 
     def add_elements(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -32,22 +32,51 @@ class ImportMealMasterDialog(wx.Dialog):
 
         label = wx.StaticText(self, label='Path:')
         self.path_ctrl = wx.TextCtrl(self)
+        self.path_ctrl.Bind(wx.EVT_KEY_UP, self.path_ctrl_select)
         vbox.Add(label, 0, self.ALIGN_ELEMENTS|wx.ALL, border=5)
         vbox.Add(self.path_ctrl, 1, self.ALIGN_ELEMENTS|wx.ALL, border=5)
 
         return vbox
-        return PaddedBox(self.path_ctrl, border = 5)
+
+    def path_ctrl_select(self, event):
+        if event.GetKeyCode() == wx.WXK_RETURN:
+            selection = os.path.expanduser(self.path_ctrl.GetValue())
+            self.path_ctrl.SetValue(selection)
+            if os.path.isdir(selection):
+                self.fc.SetDirectory(selection)
+            else:
+                self.on_accept(event)
+
+    def selected_path_is_valid(self):
+        if os.path.isdir(self.path_ctrl.GetValue()): return False
+
+        return os.path.isfile(self.path_ctrl.GetValue())
 
     def create_file_ctrl(self):
         self.fc = wx.FileCtrl(self)
         self.fc.SetMinSize(wx.Size(900, 600))
         self.Bind(wx.EVT_FILECTRL_FILEACTIVATED, self.on_file_activated)
+        self.Bind(wx.EVT_FILECTRL_SELECTIONCHANGED, self.on_selection_changed)
         return self.fc
 
+    def on_selection_changed(self, event):
+        path = self.fc.GetPath()
+
+        if not path: path = self.fc.GetDirectory()
+
+        self.path_ctrl.SetValue(path)
+
     def on_file_activated(self, event):
-        pass
-        #print(event)
-        #print(self.fc.GetPath())
+        self.path_ctrl.SetValue(self.fc.GetPath())
+        self.on_accept(event)
+
+    def on_accept(self, event):
+        if self.selected_path_is_valid():
+            self.Destroy()
+
+    def on_cancel(self, event):
+        self.path_ctrl.SetValue('')
+        self.Destroy()
 
     def create_encoding_combo(self):
         encodings = list(self.list_encodings())
@@ -56,9 +85,10 @@ class ImportMealMasterDialog(wx.Dialog):
         vbox = wx.BoxSizer(wx.HORIZONTAL)
 
         label = wx.StaticText(self, label='Encoding:')
-        combo = wx.ComboBox(self, choices=encodings)
-        vbox.Add(label, 0, self.ALIGN_ELEMENTS|wx.BOTTOM|wx.RIGHT, border=5)
-        vbox.Add(combo, 1, self.ALIGN_ELEMENTS|wx.BOTTOM|wx.RIGHT, border=5)
+        self.encoding_combo = wx.ComboBox(self, value='auto', choices=encodings)
+        borders = wx.BOTTOM|wx.RIGHT
+        vbox.Add(label, 0, self.ALIGN_ELEMENTS|borders, border=5)
+        vbox.Add(self.encoding_combo, 1, self.ALIGN_ELEMENTS|borders, border=5)
 
         return vbox
 
@@ -67,6 +97,9 @@ class ImportMealMasterDialog(wx.Dialog):
 
         cancel = wx.Button(self, label='Cancel')
         accept = wx.Button(self, label='Open')
+
+        cancel.Bind(wx.EVT_BUTTON, self.on_cancel)
+        accept.Bind(wx.EVT_BUTTON, self.on_accept)
 
         vbox.Add(cancel, 0, self.ALIGN_ELEMENTS|wx.ALL, border=5)
         vbox.Add(accept, 1, self.ALIGN_ELEMENTS|wx.ALL, border=5)
