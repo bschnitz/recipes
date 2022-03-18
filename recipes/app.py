@@ -29,7 +29,6 @@ class MainWindow(wx.Frame):
 
     def on_import_meal_master(self, event):
         ImportMealMasterDialog(self).run()
-        print('Hello Worlds!')
 
 def run():
     app = wx.App()
