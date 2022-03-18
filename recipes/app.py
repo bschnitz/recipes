@@ -18,13 +18,18 @@ class MainWindow(wx.Frame):
         nb = wx.aui.AuiNotebook(self)
         nb.AddPage(RecipeForm(nb), 'Recipes')
         nb.AddPage(MealMasterImportCheck(nb), 'Import')
-        self.Bind(wx.EVT_MENU, self.test)
-        #path = ImportMealMasterDialog(self).run()
+        self.Bind(wx.EVT_MENU, self.on_menu_item_select)
         self.Show()
 
-    def test(self, event):
-        print(event.GetId() == ev.IMPORT_MEAL_MASTER)
-        print(event.GetEventObject())
+    def on_menu_item_select(self, event):
+        menu_callback_map = {
+            ev.IMPORT_MEAL_MASTER: self.on_import_meal_master
+        }
+        menu_callback_map[event.GetId()](event)
+
+    def on_import_meal_master(self, event):
+        ImportMealMasterDialog(self).run()
+        print('Hello Worlds!')
 
 def run():
     app = wx.App()
