@@ -1,4 +1,5 @@
 import wx
+from recipes.core.util.event import ev
 
 class MainMenuBar(wx.MenuBar):
     def __init__(self, parent):
@@ -8,7 +9,5 @@ class MainMenuBar(wx.MenuBar):
 
     def add_import_menu(self):
         menu = wx.Menu()
-        menu.Append(wx.ID_ANY, "Import &MealMaster file")
+        menu.Append(ev.IMPORT_MEAL_MASTER, item="Import &MealMaster file")
         self.Append(menu, '&Import')
-
-
