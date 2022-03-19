@@ -20,8 +20,10 @@ class MealMasterImportCheck(wx.ScrolledWindow):
 
     def create_comparison_box(self, original_recipe, imported_recipe):
         vbox = wx.BoxSizer(wx.HORIZONTAL)
-        vbox.Add(self.textfield(original_recipe), 1, wx.EXPAND|wx.ALIGN_TOP)
-        vbox.Add(self.textfield(imported_recipe), 1, wx.EXPAND|wx.ALIGN_TOP)
+        flags = wx.EXPAND|wx.ALIGN_TOP|wx.TOP|wx.LEFT
+        vbox.Add(self.textfield(original_recipe), 1, flags, border = 10)
+        flags = wx.EXPAND|wx.ALIGN_TOP|wx.TOP|wx.RIGHT
+        vbox.Add(self.textfield(imported_recipe), 1, flags, border = 10)
         return vbox
 
     def update_virtual_size(self, event):
@@ -33,4 +35,5 @@ class MealMasterImportCheck(wx.ScrolledWindow):
         font = wx.Font(wx.FontInfo().Family(wx.FONTFAMILY_MODERN))
         textfield.SetFont(font)
         textfield.Bind(ev.EVT_AUTO_RESIZE, self.update_virtual_size)
+        textfield.SetInsertionPoint(0)
         return textfield
