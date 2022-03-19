@@ -5,7 +5,7 @@ import re
 import wx
 import wx.aui
 from recipes.core.parsers import MealMaster
-from recipes.core.util.event import ev
+from recipes.gui.form.framework.events import EventIds as id
 
 from recipes.gui.menu import MainMenuBar
 from recipes.gui.form.recipe import RecipeForm
@@ -24,7 +24,7 @@ class MainWindow(wx.Frame):
 
     def on_menu_item_select(self, event):
         menu_callback_map = {
-            ev.IMPORT_MEAL_MASTER: self.on_import_meal_master
+            id.IMPORT_MEAL_MASTER: self.on_import_meal_master
         }
         menu_callback_map[event.GetId()](event)
 
