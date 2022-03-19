@@ -1,4 +1,5 @@
 import yaml
+import textwrap
 
 class Recipe(object):
     def __init__(self, header, ingredient_sections, instruction_sections):
@@ -15,11 +16,14 @@ class Recipe(object):
     def to_yaml(self):
         return yaml.dump(self.recipe, default_flow_style = False, allow_unicode = True)
 
-    def __str__(self):
+    def str(self, wrap_at=0):
         return f'## {self.recipe["header"]["title"]}\n\n' + \
             self.header_to_str() + \
             self.ingredients_to_str() + \
-            self.instructions_to_str()
+            self.instructions_to_str(wrap_at)
+
+    def __str__(self):
+        return self.str()
 
     def header_to_str(self):
         header_str = ''
@@ -76,20 +80,27 @@ class Recipe(object):
 
         return '\n'.join(lines)
 
-    def instructions_to_str(self):
+    def instructions_to_str(self, wrap_at):
         instructions_str = '### Instructions\n\n'
 
         for section in self.recipe['instructions']['sections']:
-            instructions_str += self.instruction_section_to_str(section)
+            instructions_str += self.instruction_section_to_str(section, wrap_at)
 
         return instructions_str
 
-    def instruction_section_to_str(self, section):
+    def instruction_section_to_str(self, section, wrap_at):
         section_str = ''
 
         if section['title']:
             section_str += f'#### {section["title"]}\n\n'
 
-        section_str += '\n\n'.join(section["instructions"])
+        paragraphs = section['instructions']
+        if wrap_at > 0:
+            paragraphs = []
+            for paragraph in section['instructions']:
+                lines = textwrap.wrap(paragraph, wrap_at)
+                paragraphs.append('\n'.join(lines))
+
+        section_str += '\n\n'.join(paragraphs)
 
         return section_str

@@ -8,7 +8,7 @@ class MealMasterImportCheck(wx.ScrolledWindow):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         for i, original_recipe in enumerate(original_recipes):
-            imported_recipe = str(imported_recipes[i])
+            imported_recipe = imported_recipes[i].str(80)
             box = self.create_comparison_box(original_recipe, imported_recipe)
             vbox.Add(box, 0, wx.EXPAND|wx.ALIGN_TOP)
         self.SetSizer(vbox)
@@ -20,9 +20,9 @@ class MealMasterImportCheck(wx.ScrolledWindow):
 
     def create_comparison_box(self, original_recipe, imported_recipe):
         vbox = wx.BoxSizer(wx.HORIZONTAL)
-        flags = wx.EXPAND|wx.ALIGN_TOP|wx.TOP|wx.LEFT
+        flags = wx.EXPAND|wx.ALIGN_TOP|wx.TE_READONLY|wx.TOP|wx.LEFT
         vbox.Add(self.textfield(original_recipe), 1, flags, border = 10)
-        flags = wx.EXPAND|wx.ALIGN_TOP|wx.TOP|wx.RIGHT
+        flags = wx.EXPAND|wx.ALIGN_TOP|wx.TE_READONLY|wx.TOP|wx.RIGHT
         vbox.Add(self.textfield(imported_recipe), 1, flags, border = 10)
         return vbox
 
