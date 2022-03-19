@@ -35,6 +35,7 @@ class MealMaster(object):
 
     def __init__(self):
         self.separator = None
+        self.original_recipes = []
         self.recipes = []
 
     def parse_file(self, path, encoding='utf-8'):
@@ -43,7 +44,9 @@ class MealMaster(object):
                 self.recipes.append(recipe)
 
     def read_recipe(self, line_iterator):
-        return self.parse_recipe_lines(self.read_recipe_lines(line_iterator))
+        lines = self.read_recipe_lines(line_iterator)
+        if lines: self.original_recipes.append('\n'.join(lines))
+        return self.parse_recipe_lines(lines)
 
     def read_recipe_lines(self, line_iterator):
         first_line = self.read_until_block_start(line_iterator)
