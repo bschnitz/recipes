@@ -5,6 +5,7 @@ import re
 import wx
 import wx.aui
 from recipes.core.parsers import MealMaster
+import recipes.gui.form.framework.events as ev
 from recipes.gui.form.framework.events import EventIds as id
 
 from recipes.gui.menu import MainMenuBar
@@ -35,12 +36,17 @@ class MainWindow(wx.Frame):
         encoding = dialog.get_encoding()
         if file: self.import_meal_master_file(file, encoding)
 
+    def on_cancel_import(self, event):
+        page_index = self.nb.GetPageIndex(event.GetEventObject())
+        self.nb.DeletePage(page_index)
+
     def import_meal_master_file(self, file, encoding):
         m = MealMaster()
         m.parse_file(file, encoding=encoding)
         mmic = MealMasterImportCheck(self.nb, m.original_recipes, m.recipes)
         filename = os.path.basename(file)
         self.nb.AddPage(mmic, f'Import: {filename}')
+        mmic.Bind(ev.EVT_CANCEL_IMPORT, self.on_cancel_import)
 
 def run():
     app = wx.App()
