@@ -1,6 +1,7 @@
 # Pycache and compiled python files.
 __pycache__/
 *py[cod]
+*.bak
 
 # Juyter notebook checkpoints
 .ipynb_checkpoints
