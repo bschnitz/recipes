@@ -35,6 +35,7 @@ class MealMasterImportCheck(wx.Panel):
         accept = wx.Button(self, label='Accept and Save')
         cancel = wx.Button(self, label='Cancel and Discard')
         cancel.Bind(wx.EVT_BUTTON, self.on_cancel)
+        accept.Bind(wx.EVT_BUTTON, self.on_accept)
         vbox.Add(accept, 1, wx.ALIGN_CENTER|wx.ALL, border=5)
         vbox.Add(cancel, 1, wx.ALIGN_CENTER|wx.ALL, border=5)
         return vbox
@@ -44,6 +45,8 @@ class MealMasterImportCheck(wx.Panel):
         new_event.SetEventObject(self)
         wx.PostEvent(self, new_event)
 
+    def on_accept(self, event):
+        pass
 
     def create_scrolled_panes(self, original_recipes, imported_recipes):
         self.sw = wx.ScrolledWindow(self)

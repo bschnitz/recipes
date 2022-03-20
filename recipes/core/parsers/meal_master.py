@@ -3,7 +3,7 @@ import json
 import itertools
 from charset_normalizer import from_path
 
-from recipes.core.util import Recipe
+from recipes.core.util.recipe import Recipe
 from chardet.universaldetector import UniversalDetector
 
 class FileLineIterator(object):
@@ -75,7 +75,7 @@ class MealMaster(object):
         header, rest              = self.parse_header(recipe_lines)
         ingredient_sections, rest = self.parse_ingredient_sections(rest)
         instruction_sections      = self.parse_instruction_sections(rest)
-        return Recipe(header, ingredient_sections, instruction_sections)
+        return self.create_recipe(header, ingredient_sections, instruction_sections)
 
     def parse_header(self, lines):
         _, title, rest      = self.split_lines(lines, self.title)
@@ -134,7 +134,7 @@ class MealMaster(object):
         ingredient = ingredient_lines.pop(0)
         for line in ingredient_lines:
             if line.get('continuation'):
-                ingredient['ingredient'] += ' ' + line['continuation']
+                ingredient['name'] += ' ' + line['continuation']
             else:
                 ingredients.append(ingredient)
                 ingredient = line
@@ -165,7 +165,7 @@ class MealMaster(object):
         name, second = self.ingredient_second_column(rest)
 
         if len(first) == 0: first['continuation'] = name
-        else:               first['ingredient']   = name
+        else:               first['name']         = name
 
         return [first, second]
 
@@ -179,7 +179,7 @@ class MealMaster(object):
 
         amount, unit, rest = ingredient
 
-        return [{'amount': amount, 'unit': unit}, rest]
+        return [{'amount': amount, 'shortunit': unit}, rest]
 
     def ingredient_second_column(self, string):
         first, continuation = self.ingredient_continuation_second_column(string)
@@ -189,8 +189,8 @@ class MealMaster(object):
         if not match: return [string, None]
 
         second = { 'amount': match[2].strip(),
-                   'unit': match[3].strip(),
-                   'ingredient': match[4] }
+                   'shortunit': match[3].strip(),
+                   'name': match[4] }
         return [ match[1].strip(), second ]
 
     def parse_instruction_sections(self, lines):
@@ -309,3 +309,20 @@ class MealMaster(object):
     def find_index(self, haystack, needle_callback):
         for index, item in enumerate(haystack):
             if needle_callback(item): return index
+
+    def create_recipe(self, header, ingredient_sections, instruction_sections):
+        title = header.pop('title')
+        recipe = Recipe(title)
+
+        recipe.set_meta_fields(header)
+
+        for ingredient_section in ingredient_sections:
+            section = recipe.append_section(ingredient_section['title'])
+            for ingredient in ingredient_section['ingredients']:
+                section.append_ingredient(**ingredient)
+
+        for instruction_section in instruction_sections:
+            section = recipe.append_section(instruction_section['title'])
+            section.set_instructions(instruction_section['instructions'])
+
+        return recipe
