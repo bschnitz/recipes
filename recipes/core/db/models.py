@@ -1,6 +1,6 @@
 import peewee as pw
 
-db_proxy = pw.DatabaseProxy()
+db = pw.SqliteDatabase(None)
 
 # important: enforce foreign_keys for sqlite, otherwise ON DELETE
 # behaviour will be ignored
@@ -10,7 +10,7 @@ db_proxy = pw.DatabaseProxy()
 # thus the same settings, database
 class BaseModel(pw.Model):
     class Meta:
-        database = db_proxy
+        database = db
 
         # better table naming (camelcase to underscore)
         legacy_table_names=False

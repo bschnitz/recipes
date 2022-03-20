@@ -1,4 +1,5 @@
 import wx
+from recipes.core.db import RecipeStorage
 from recipes.gui.fonts.head_1 import Head1
 from recipes.gui.form.framework import AutoResizeMultilineText
 import recipes.gui.form.framework.events as ev
@@ -9,6 +10,7 @@ class MealMasterImportCheck(wx.Panel):
         vbox = wx.BoxSizer(wx.VERTICAL)
         buttons = self.create_buttons()
         header = self.create_header()
+        self.imported_recipes = imported_recipes
         panes = self.create_scrolled_panes(original_recipes, imported_recipes)
         vbox.Add(5, 5, 0)
         vbox.Add(buttons, 0, wx.ALIGN_CENTER_HORIZONTAL)
@@ -46,7 +48,7 @@ class MealMasterImportCheck(wx.Panel):
         wx.PostEvent(self, new_event)
 
     def on_accept(self, event):
-        pass
+        RecipeStorage().save(self.imported_recipes)
 
     def create_scrolled_panes(self, original_recipes, imported_recipes):
         self.sw = wx.ScrolledWindow(self)
