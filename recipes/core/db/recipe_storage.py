@@ -115,7 +115,8 @@ class RecipeStorage(object):
             for ingredient in ingredients:
                 rows.append((next_id, el['id'], ingredient.get_name()))
                 amount = ingredient.get_amount()
-                if amount != None: rows_amount.append((next_id, amount))
+                if amount != None and amount != '':
+                    rows_amount.append((next_id, amount))
                 ingredient_info = {'id': next_id, 'ingredient': ingredient}
                 ingredient_structure.append(ingredient_info)
                 next_id += 1
@@ -173,6 +174,9 @@ class RecipeStorage(object):
             long = el['ingredient'].get_longunit() or ''
             id_short = short and short_dict.get(short, {}).get('id')
             id_long = long and long_dict.get(long, {}).get('id')
+
+            if not (long or short): continue
+
             rows.append((el['id'], id_short or id_long or 0))
 
         fields = [m.Unit.ingredient, m.Unit.name]
