@@ -10,3 +10,15 @@ class Ingredient(object):
         if include_shortunit: unit.append(self.shortunit or '')
         if include_longunit: unit.append(self.longunit or '')
         return [self.amount or '', *unit, self.name]
+
+    def get_name(self):
+        return self.name
+
+    def get_amount(self):
+        return self.amount
+
+    def get_shortunit(self):
+        return self.shortunit
+
+    def get_longunit(self):
+        return self.longunit

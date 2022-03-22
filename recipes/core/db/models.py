@@ -15,6 +15,11 @@ class BaseModel(pw.Model):
         # better table naming (camelcase to underscore)
         legacy_table_names=False
 
+    @classmethod
+    def next_auto_increment_id(cls):
+        id = cls.select(pw.fn.MAX(cls.id)).scalar()
+        return 0 if id == None else id + 1
+
 class Recipe(BaseModel):
     title = pw.CharField()
 
@@ -53,6 +58,11 @@ class Unit(BaseModel):
 class Instruction(BaseModel):
     section = pw.ForeignKeyField(Section, backref='instructions')
     order = pw.SmallIntegerField()
+    instruction = pw.CharField()
 
     class Meta:
         primary_key = pw.CompositeKey('section', 'order')
+
+def create_tables():
+    db.create_tables([Recipe, MetaKey, MetaField, Section, SectionTitle,
+                      Ingredient, Amount, UnitName, Unit, Instruction])

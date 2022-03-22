@@ -10,6 +10,20 @@ class Recipe(object):
     def set_meta_fields(self, meta_fields):
         self.meta_fields = meta_fields
 
+    def get_meta_keys(self):
+        return self.meta_fields.keys()
+
+    def get_meta_values(self, key):
+        value = self.meta_fields[key]
+        return value if isinstance(value, list) else [value]
+
+    def get_meta_key_value_pairs(self):
+        pairs = []
+        for key in self.get_meta_keys():
+            for value in self.get_meta_values(key):
+                pairs.append((key, value))
+        return pairs
+
     def append_section(self, title=None):
         section = Section(title)
         self.sections.append(section)
@@ -33,3 +47,9 @@ class Recipe(object):
     def meta_field_to_str(self, key, value):
         if isinstance(value, list): value = ', '.join(value)
         return f'{key}: {value}'
+
+    def get_title(self):
+        return self.title
+
+    def get_sections(self):
+        return self.sections

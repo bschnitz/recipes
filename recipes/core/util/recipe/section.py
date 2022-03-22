@@ -8,6 +8,15 @@ class Section(object):
         self.ingredients = []
         self.instructions = []
 
+    def get_title(self):
+        return self.title
+
+    def get_instructions(self):
+        return self.instructions
+
+    def get_ingredients(self):
+        return self.ingredients
+
     def append_ingredient(self, name, amount=None, longunit=None, shortunit=None):
         self.ingredients.append(Ingredient(name, amount, longunit, shortunit))
 

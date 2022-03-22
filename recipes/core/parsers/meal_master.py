@@ -272,7 +272,8 @@ class MealMaster(object):
     def portions(self, line):
         portions = re.search(self.RE_SERVINGS, line)
 
-        if portions: return { 'amount': portions[2], 'unit': portions[1] }
+        if portions:
+            return { 'amount': portions[2], 'unit': portions[1].lower() }
 
     def section_title(self, line):
         if not line.startswith(self.separator): return
